@@ -31,8 +31,8 @@ describe('integration: browserstack', () => {
       profiles: {
         default: {
           desiredCapabilities: {
-            'browserstack.user': process.env.BROWSERSTACK_USER,
-            'browserstack.key': process.env.BROWSERSTACK_KEY,
+            'browserstack.user': process.env.BROWSERSTACK_USERNAME,
+            'browserstack.key': process.env.BROWSERSTACK_ACCESS_KEY,
             'browserstack.video': false,
             'browserstack.selenium_version': '3.0.1',
           },

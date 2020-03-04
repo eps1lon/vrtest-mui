@@ -1,28 +1,7 @@
 // @flow
 
 import fs from 'fs-promise';
-import imageDiff from 'image-diff';
-import pngCrop from 'png-crop';
-
-export function compareScreenshots(
-  actualImage: string,
-  expectedImage: string,
-  diffImage: string,
-): Promise<boolean> {
-  return new Promise((resolve) => {
-    imageDiff({
-      actualImage,
-      expectedImage,
-      diffImage,
-    }, (err, imagesAreSame) => {
-      if (err) {
-        throw err;
-      } else {
-        resolve(imagesAreSame);
-      }
-    });
-  });
-}
+import sharp from 'sharp';
 
 export function saveScreenshot(
   screenshotPath: string,
@@ -31,32 +10,19 @@ export function saveScreenshot(
   return fs.outputFile(screenshotPath, screenshotData, 'base64');
 }
 
-export function cropScreenshot(
-  screenshotPath: string,
+export async function cropScreenshot(
+  screenshotInPath: string,
+  screenshotOutPath: string,
   windowSize: size,
   elementSize: size,
   elementLocation: location,
 ): Promise<string> {
-  return new Promise((resolve) => {
-    const cropWidth = elementSize.width < windowSize.width;
-    const cropHeight = elementSize.height < windowSize.height;
+  const metadata = await sharp(screenshotInPath).metadata();
 
-    if (cropWidth || cropHeight) {
-      const config = {
-        width: cropWidth ? elementSize.width : windowSize.width,
-        height: cropHeight ? elementSize.height : windowSize.height,
-        top: Math.floor(elementLocation.y),
-        left: Math.floor(elementLocation.x),
-      };
-
-      pngCrop.crop(screenshotPath, screenshotPath, config, (err) => {
-        if (err) {
-          throw err;
-        }
-        resolve(screenshotPath);
-      });
-    } else {
-      resolve(screenshotPath);
-    }
-  });
+  return sharp(screenshotInPath).extract({
+    top: elementLocation.y,
+    left: elementLocation.x,
+    width: Math.min(elementSize.width, metadata.width - elementLocation.x),
+    height: Math.min(elementSize.height, metadata.height - elementLocation.y),
+  }).toFile(screenshotOutPath);
 }

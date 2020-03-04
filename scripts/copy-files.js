@@ -35,7 +35,7 @@ function createPackageFile() {
     } = packageData;
 
     const minimalPackage = {
-      name: 'vrtest',
+      name: 'vrtest-mui',
       author,
       bin,
       main,
